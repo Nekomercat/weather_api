@@ -7,11 +7,11 @@ WORKDIR /app
 
 COPY ./app /app
 
-ADD schema.sql /var/lib/postgresql/data/new/
+ADD schema.sql /var/lib/postgresql/data/
 
 #COPY schema.sql /var/lib/postgresql/data/schema.sql
 
-RUN chmod a+r /var/lib/postgresql/data/new/*
+RUN chmod a+r /var/lib/postgresql/data/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

@@ -1,5 +1,3 @@
-CREATE DATABASE deal_engine;
-
 CREATE TABLE travel_tickets (
     origin character varying(3), 
     destination character varying(3), 
