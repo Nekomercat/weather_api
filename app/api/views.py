@@ -38,19 +38,9 @@ def get_weather_for_ticket(request, ticket):
     origin_city = ticket.origin
     destination_city = ticket.destination
 
-    # Obtener el informe del clima para la ciudad de origen desde el caché del navegador
-    origin_weather = request.session.get(f'weather_{origin_city}')
-    if origin_weather is None:
-        origin_weather = get_weather_for_city(origin_latitude,origin_longitude)
-        # Guardar en caché del navegador
-        request.session[f'weather_{origin_city}'] = origin_weather
+    origin_weather = get_weather_for_city(origin_latitude,origin_longitude)
 
-    # Obtener el informe del clima para la ciudad de destino desde el caché del navegador
-    destination_weather = request.session.get(f'weather_{destination_city}')
-    if destination_weather is None:
-        destination_weather = get_weather_for_city(destination_latitude,destination_longitude)
-        # Guardar en caché del navegador
-        request.session[f'weather_{destination_city}'] = destination_weather
+    destination_weather = get_weather_for_city(destination_latitude,destination_longitude)
 
     weather_report = {
         'ticket_id': ticket.id,
@@ -72,7 +62,8 @@ def get_weather_for_city(latitude,longitude):
         "q": f"{latitude},{longitude}"
     }
 
-    response = requests.get(WEATHER_API_URL, params=params)
+    with api_semaphore:
+        response = requests.get(WEATHER_API_URL, params=params)
 
     response.raise_for_status()
     weather_data = response.json()
