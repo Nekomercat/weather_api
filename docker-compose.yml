@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: bluen
+      POSTGRES_DB: deal_engine
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    command: python manage.py runserver 0.0.0.0:8000
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
