@@ -1,4 +1,4 @@
-CREATE TABLE travel_tickets (
+CREATE TABLE TABLE IF NOT EXISTS travel_tickets (
     origin character varying(3), 
     destination character varying(3), 
     airline character varying(2), 
@@ -11,8 +11,8 @@ CREATE TABLE travel_tickets (
     destination_name character varying(100), 
     destination_latitud double precision, 
     destination_longitud double precision
-);
+)
 
-COPY travel_tickets FROM '/app/challenge_dataset.csv' DELIMITER ',' CSV HEADER;
+COPY travel_tickets FROM '/app/challenge_dataset.csv' DELIMITER ',' CSV HEADER
 
 ALTER TABLE travel_tickets ADD COLUMN id SERIAL PRIMARY KEY;

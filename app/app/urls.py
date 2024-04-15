@@ -20,4 +20,5 @@ from api import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('travel-tickets/', views.get_travel_tickets, name='get_travel_tickets'),
+    path('weather-report/', views.get_weather_report, name='get_weather_report'),
 ]
