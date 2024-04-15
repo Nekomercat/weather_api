@@ -13,7 +13,7 @@ def get_travel_tickets(request):
     return JsonResponse({'travel_tickets': travel_tickets})
 
 def get_weather_report(request):
-    tickets = TravelTicket.objects.all()[:100]
+    tickets = TravelTicket.objects.all()[:10]
 
     weather_reports = []
     with ThreadPoolExecutor(max_workers=10) as executor:
@@ -72,7 +72,8 @@ def get_weather_for_city(latitude,longitude):
         "q": f"{latitude},{longitude}"
     }
 
-    response = requests.get(WEATHER_API_URL, params=params)
+    with api_semaphore:
+        response = requests.get(WEATHER_API_URL, params=params)
 
     response.raise_for_status()
     weather_data = response.json()
