@@ -11,8 +11,12 @@ CREATE TABLE IF NOT EXISTS travel_tickets (
     destination_name character varying(100), 
     destination_latitud double precision, 
     destination_longitud double precision
-)
+);
 
-COPY travel_tickets FROM '/app/challenge_dataset.csv' DELIMITER ',' CSV HEADER
-
-ALTER TABLE travel_tickets ADD COLUMN id SERIAL PRIMARY KEY;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'travel_tickets') THEN
+        COPY travel_tickets FROM '/app/challenge_dataset.csv' DELIMITER ',' CSV HEADER
+        ALTER TABLE travel_tickets ADD COLUMN id SERIAL PRIMARY KEY;
+    END IF;
+END $$;
