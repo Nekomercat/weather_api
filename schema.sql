@@ -1,4 +1,4 @@
-CREATE TABLE TABLE IF NOT EXISTS travel_tickets (
+CREATE TABLE IF NOT EXISTS travel_tickets (
     origin character varying(3), 
     destination character varying(3), 
     airline character varying(2), 
