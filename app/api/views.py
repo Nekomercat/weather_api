@@ -7,13 +7,12 @@ from concurrent.futures import ThreadPoolExecutor
 
 api_semaphore = threading.BoundedSemaphore(value=5)
 
-# Create your views here.
 def get_travel_tickets(request):
     travel_tickets = list(TravelTicket.objects.all().values())
     return JsonResponse({'travel_tickets': travel_tickets})
 
 def get_weather_report(request):
-    tickets = TravelTicket.objects.all()[:10]
+    tickets = TravelTicket.objects.all()[:3000]  # Esto podría variar dependiendo de cómo determines qué tickets salen el mismo día
 
     weather_reports = []
     with ThreadPoolExecutor(max_workers=10) as executor:
