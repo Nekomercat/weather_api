@@ -28,6 +28,8 @@ def get_weather_report(request):
                 # Manejar excepciones si ocurren
                 print(f'Error al procesar el ticket {ticket.id}: {exc}')
 
+    weather_reports.sort(key=lambda x: x['ticket_id'])
+
     return JsonResponse({'weather_reports': weather_reports})
 
 def get_weather_for_ticket(request, ticket):
@@ -38,9 +40,17 @@ def get_weather_for_ticket(request, ticket):
     origin_city = ticket.origin
     destination_city = ticket.destination
 
-    origin_weather = get_weather_for_city(origin_latitude,origin_longitude)
+    origin_weather = request.session.get(f'weather_{origin_city}')
+    if origin_weather is None:
+        origin_weather = get_weather_for_city(origin_latitude,origin_longitude)
+        # Guardar en caché del navegador
+        request.session[f'weather_{origin_city}'] = origin_weather
 
-    destination_weather = get_weather_for_city(destination_latitude,destination_longitude)
+    destination_weather = request.session.get(f'weather_{destination_city}')
+    if destination_weather is None:
+        destination_weather = get_weather_for_city(destination_latitude,destination_longitude)
+        # Guardar en caché del navegador
+        request.session[f'weather_{destination_city}'] = destination_weather
 
     weather_report = {
         'ticket_id': ticket.id,
