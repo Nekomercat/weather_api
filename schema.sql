@@ -13,7 +13,9 @@ CREATE TABLE IF NOT EXISTS travel_tickets (
     destination_longitud double precision
 );
 
-IF EXISTS (
+DO $$
+BEGIN
+    IF EXISTS (
         SELECT 1 
         FROM information_schema.tables 
         WHERE table_name = 'travel_tickets'
