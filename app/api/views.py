@@ -12,7 +12,7 @@ def get_travel_tickets(request):
     return JsonResponse({'travel_tickets': travel_tickets})
 
 def get_weather_report(request):
-    tickets = TravelTicket.objects.all()[:3000]  # Esto podría variar dependiendo de cómo determines qué tickets salen el mismo día
+    tickets = TravelTicket.objects.all()[:3000]
 
     weather_reports = []
     with ThreadPoolExecutor(max_workers=10) as executor:
