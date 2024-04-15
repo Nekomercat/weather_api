@@ -1,6 +1,11 @@
 import requests
+import threading
+import concurrent.futures
 from .models import TravelTicket
 from django.http import JsonResponse
+from concurrent.futures import ThreadPoolExecutor
+
+api_semaphore = threading.BoundedSemaphore(value=5)
 
 # Create your views here.
 def get_travel_tickets(request):
@@ -11,21 +16,43 @@ def get_weather_report(request):
     tickets = TravelTicket.objects.all()[:100]
 
     weather_reports = []
-    for ticket in tickets:
-        origin_latitude = ticket.origin_latitud
-        origin_longitude = ticket.origin_longitud
-        destination_latitude = ticket.destination_latitud
-        destination_longitude = ticket.destination_longitud
-        origin_city = ticket.origin
-        destination_city = ticket.destination
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_ticket = {executor.submit(get_weather_for_ticket, request, ticket): ticket for ticket in tickets}
 
-        # Obtener el informe del clima para la ciudad de origen
+        for future in concurrent.futures.as_completed(future_to_ticket):
+            ticket = future_to_ticket[future]
+            try:
+                weather_report = future.result()
+                weather_reports.append(weather_report)
+            except Exception as exc:
+                # Manejar excepciones si ocurren
+                print(f'Error al procesar el ticket {ticket.id}: {exc}')
+
+    return JsonResponse({'weather_reports': weather_reports})
+
+def get_weather_for_ticket(request, ticket):
+    origin_latitude = ticket.origin_latitud
+    origin_longitude = ticket.origin_longitud
+    destination_latitude = ticket.destination_latitud
+    destination_longitude = ticket.destination_longitud
+    origin_city = ticket.origin
+    destination_city = ticket.destination
+
+    # Obtener el informe del clima para la ciudad de origen desde el caché del navegador
+    origin_weather = request.session.get(f'weather_{origin_city}')
+    if origin_weather is None:
         origin_weather = get_weather_for_city(origin_latitude,origin_longitude)
-        
-        # Obtener el informe del clima para la ciudad de destino
-        destination_weather = get_weather_for_city(destination_latitude,destination_longitude)
+        # Guardar en caché del navegador
+        request.session[f'weather_{origin_city}'] = origin_weather
 
-        weather_report = {
+    # Obtener el informe del clima para la ciudad de destino desde el caché del navegador
+    destination_weather = request.session.get(f'weather_{destination_city}')
+    if destination_weather is None:
+        destination_weather = get_weather_for_city(destination_latitude,destination_longitude)
+        # Guardar en caché del navegador
+        request.session[f'weather_{destination_city}'] = destination_weather
+
+    weather_report = {
         'ticket_id': ticket.id,
         'flight_num': ticket.flight_num,
         'origin_city': origin_city,
@@ -34,9 +61,7 @@ def get_weather_report(request):
         'destination_weather': destination_weather
     }
 
-        weather_reports.append(weather_report)
-
-    return JsonResponse({'weather_reports': weather_reports})
+    return weather_report
 
 def get_weather_for_city(latitude,longitude):
     WEATHER_API_KEY = "4b901c307a634116970233446241404"
